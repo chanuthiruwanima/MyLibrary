@@ -1,0 +1,44 @@
+<!DOCTYPE html> 
+<html>
+    <head><link rel="stylesheet" href="style.css"> 
+    <title>My Library</title>
+    </head>
+ <nav>
+    <ul>
+        <li><a href="#">My Books</a></li>
+        <li><a href="#">Reading Log</a></li>
+        <li><a href="#">TBR</a></li>
+       </ul>
+    </nav>
+<body>
+    <div id="my-shelf">
+    </div>
+    <form id="add-book">
+        <input type="text" id="book-title" placeholder="Book Title" required>
+        <button type="submit">Add to Shelf</button>
+    </form>
+    <div id="review-modal">
+        <span class="closeBtn">X</span>
+        <h2 id="review-title">Book Title</h2>
+        <h3 id="review-author">Author</h3>
+        <h3 id="review-genre">Genre</h3>
+        <label id="review-rating">Rating:</label>
+        <h3 id="review-genre">Pages</h3>
+        <label id="review-start">Start date:</label>
+        <input type="date" id="review-start-date">
+        <label id="review-end">End date:</label>
+        <input type="date"  id="review-end-date">
+        <label id="review-label">Review:</label>
+        <textarea id="review-text" placeholder="your review..."></textarea>
+        <label id="quotes-label">Quotes:</label>
+        <textarea id="review-quotes" placeholder="quotes..."></textarea>
+        <div id="tropes-container">
+        </div>
+        <div class="add-trope-wrapper">
+            <input type="text" id="new-trope-input" placeholder="Add trope...">
+            <button id="add-trope-btn">+</button>
+        </div>
+        <button id="save-review-btn">Save Review</button>
+    </div>
+</body>
+</html>
