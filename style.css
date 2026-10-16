@@ -1,0 +1,114 @@
+body {
+    background-color: #e0d0b6;
+    margin:0;
+    padding:20px;
+}
+
+nav ul{
+    list-style: none;
+    display:flex;
+    gap:20px;
+    padding:0px;
+    border-bottom: 2px solid #cc9e4c;
+    padding-bottom: 10px;
+}
+
+nav a{
+    color:#442c1b;
+    font-weight: 500;
+}
+
+nav a:hover {
+    color: #774d30;
+}
+
+#review-modal{
+    display:none;
+    grid-template-columns: 180px 1fr;
+    grid-template-areas: 
+    "close close"
+    "cover metadata"
+    "cover dates"
+    "rating rating"
+    "review review"
+    "quotes quotes"
+    "tropes tropes"
+    "btn btn";
+    gap: 10px;
+    transform: translate(-50%,-50%);
+    position: fixed;
+    left:50%; top:50%;
+    z-index: 100;
+    background-color: #8b9ea5;
+    padding:40px;
+    border-radius:10px;
+    width:650px;
+    max-height: 90vh;
+    overflow-y:auto;
+}
+.closeBtn      { grid-area: close; justify-self: end; }
+.book-cover    { grid-area: cover; height: 100%; min-height: 180px; display: flex; align-items: center; justify-content: center; background: #a1c7d5; border-radius: 6px; }
+.book-metadata { grid-area: metadata; background: #a1c7d5; border-radius: 6px; padding: 10px; }
+.date-row      { grid-area: dates; background: #a1c7d5; border-radius: 6px; padding: 10px; display: flex; gap: 10px; }
+.rating-box    { grid-area: rating; background: #a1c7d5; border-radius: 6px; padding: 10px; }
+.review-box    { grid-area: review; background: #a1c7d5; border-radius: 6px; padding: 10px; }
+.quotes-box    { grid-area: quotes; background: #a1c7d5; border-radius: 6px; padding: 10px; }
+#tropes-container { grid-area: tropes; background: #a1c7d5; border-radius: 6px; padding: 10px; }
+.add-trope-wrapper { background: #a1c7d5; border-radius: 6px; padding: 10px; }
+#save-review-btn   { grid-area: btn; }
+
+
+.book-cover, .book-metadata, .date-row, .rating-box, .review-box, .quotes-box{
+    background-color: #5f83a4;
+    border-radius: 6px;
+    padding:10px;
+    margin-bottom: 10px;
+}
+.date-row{
+    display: flex;
+    gap:10px;
+}
+
+.date-row div{
+    flex:1;
+}
+
+#review-modal textarea, 
+#tropes-container, 
+.add-trope-wrapper {
+    background-color:#a1c7d5;
+    border-radius: 6px;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+#review-modal input[type="text"],
+#review-modal input[type="date"],
+#review-modal input[type="number"] {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #d4cdc3;
+    font-family: Georgia, serif;
+    color: #332f2e;
+    padding: 4px 0;
+    margin-bottom: 10px;
+}
+
+#review-modal textarea {
+    width: 100%;
+    height: 100px;
+    resize: none;
+    font-family: Georgia, serif;
+    color: #332f2e;
+}
+
+.closeBtn {
+    float: right;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #7a736d;
+}
+
+.closeBtn:hover {
+    color: #332f2e;
+} 
