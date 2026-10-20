@@ -15,7 +15,42 @@
         <button type="submit">Add to Shelf</button>
     </form>
 <body>
-    <div id="my-shelf">
+    <div class="my-shelf">
+        <div class="book-card">
+            <img src="six-of-crows.jpg">
+        </div>
+              <div class="book-card">
+                <img src="death-on-the-nile.jpg">
+        </div>
+              <div class="book-card">
+                <img src="midnight-library.jpg">
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <div class="currently-reading">
+            <h3>Currently Reading</h3>
+            <img src="six-of-crows.jpg">
+            <div class="current-read-details">
+                <p id="current-title">Book Title</p>
+                <p id="current-author">Book Author</p>
+                <div id="progress-fill"></div>
+                <span id="progress-pages">Page x of x</span>
+            </div>
+        </div>
+
+        <div class="progress-tracker">
+            <h3>2026 Reading Goal</h3>
+            <div id="goal-stats">
+                <div class="progress-circle">
+                </div>
+                <span id="books-read">12</span><span id="books-goal">50</span>
+               
+            </div>
+        </div>
+    </div>
+     <span>✮ Favourites</span>
+    <div class="my-shelf" id="favourites-shelf">
         <div class="book-card">
             <img src="six-of-crows.jpg">
         </div>
