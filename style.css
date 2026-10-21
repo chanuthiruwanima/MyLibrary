@@ -124,7 +124,7 @@ nav a:hover {
     position: absolute;
     top:0;
     left:0;
-    width: 45%;
+    width: 34%;
     height: 100%;
     background-color: var(--accent-color);
     border-radius: 5px;
@@ -159,6 +159,10 @@ nav a:hover {
     "tropes tropes"
     "btn btn";
     gap: 10px;
+}
+
+#add-book-modal{
+    display: none;
 }
 .closeBtn      { grid-area: close; justify-self: end; }
 .book-cover    { grid-area: cover; height: 100%; min-height: 180px; display: flex; align-items: center; justify-content: center; background: #a1c7d5; border-radius: 6px; }

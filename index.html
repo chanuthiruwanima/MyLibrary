@@ -1,21 +1,18 @@
 <!DOCTYPE html> 
 <html>
     <head><link rel="stylesheet" href="style.css"> 
+        <script src="script.js"></script>
     <title>My Library</title>
     </head>
- <nav>
+<body>
+    <nav>
     <ul>
         <li><a href="#">My Books</a></li>
         <li><a href="#">Reading Log</a></li>
         <li><a href="#">TBR</a></li>
        </ul>
     </nav>
-        <form id="add-book">
-        <input type="text" id="book-title" placeholder="Book Title" required>
-        <button type="submit">Add to Shelf</button>
-    </form>
-<body>
-    <div class="my-shelf">
+    <div class="my-shelf" id="main-shelf">
         <div class="book-card">
             <img src="six-of-crows.jpg">
         </div>
@@ -60,6 +57,15 @@
               <div class="book-card">
                 <img src="midnight-library.jpg">
         </div>
+        <div id="add-book-favourites" class="add-book">
+            <span>+</span>
+        </div>
+    </div>
+    <div id="add-book-modal" class="modal">
+         <span id="add-book-close" class="closeBtn">X</span>
+        <h3>Add Book</h3>
+         <input type="text" id="add-book-title" placeholder="Book Title" required>
+        <button id="add-to-shelf" type="submit">Add to Shelf</button>
     </div>
     <button id="create-shelf-btn">Create New Shelf</button>
     <div id="shelf-modal" class="modal">
