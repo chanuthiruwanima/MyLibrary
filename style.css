@@ -119,17 +119,35 @@ nav a:hover {
     overflow: hidden;
 }
 
-#progress-fil::after{
+#progress-fill::after{
     content: "";
     position: absolute;
     top:0;
     left:0;
     width: 45%;
+    height: 100%;
     background-color: var(--accent-color);
     border-radius: 5px;
 }
+.modal{
+    transform: translate(-50%,-50%);
+    position: fixed;
+    left:50%; top:50%;
+    z-index: 100;
+    background-color: #8b9ea5;
+    padding:40px;
+    border-radius:10px;
+    width:650px;
+    max-height: 90vh;
+    overflow-y:auto;
+}
+
+#shelf-modal{
+    display: none;
+}
+
 #review-modal{
-    display:none;
+    display: none;
     grid-template-columns: 180px 1fr;
     grid-template-areas: 
     "close close"
@@ -141,16 +159,6 @@ nav a:hover {
     "tropes tropes"
     "btn btn";
     gap: 10px;
-    transform: translate(-50%,-50%);
-    position: fixed;
-    left:50%; top:50%;
-    z-index: 100;
-    background-color: #8b9ea5;
-    padding:40px;
-    border-radius:10px;
-    width:650px;
-    max-height: 90vh;
-    overflow-y:auto;
 }
 .closeBtn      { grid-area: close; justify-self: end; }
 .book-cover    { grid-area: cover; height: 100%; min-height: 180px; display: flex; align-items: center; justify-content: center; background: #a1c7d5; border-radius: 6px; }
@@ -177,6 +185,15 @@ nav a:hover {
 
 .date-row div{
     flex:1;
+}
+
+#create-shelf-btn{
+    background: var(--secondary-color);
+    color: var(--primary-color);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
 }
 
 #review-modal textarea, 
@@ -218,3 +235,4 @@ nav a:hover {
 .closeBtn:hover {
     color: #332f2e;
 } 
+

@@ -61,9 +61,16 @@
                 <img src="midnight-library.jpg">
         </div>
     </div>
+    <button id="create-shelf-btn">Create New Shelf</button>
+    <div id="shelf-modal" class="modal">
+        <span id="shelf-close" class="closeBtn">X</span>
+        <h3>Create New Shelf</h3>
+        <input type="text" id="new-shelf-name" placeholder="shelf name..." required>
+        <button id="confirm-shelf" class="submit-btn">Create Shelf</button>
+    </div>
 
-    <div id="review-modal">
-        <span class="closeBtn">X</span>
+    <div class="modal" id="review-modal">
+        <span id="review-close" class="closeBtn">X</span>
         <div class="book-cover">Book Cover</div>
         <div class="book-metadata">
         <h2 id="review-title">Book Title</h2>
@@ -102,7 +109,7 @@
             <input type="text" id="new-trope-input" placeholder="Add trope...">
             <button id="add-trope-btn">+</button>
         </div>
-        <button id="save-review-btn">Save Review</button>
+        <button class="submit-btn" id="save-review-btn">Save Review</button>
     </div>
 </body>
 </html>
