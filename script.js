@@ -14,10 +14,18 @@ const addBookBtns = document.querySelectorAll('.add-book');
 const newBookTitle = document.getElementById('add-book-title');
 const addToShelf = document.getElementById('add-to-shelf')
 
+const mainShelf = document.getElementById('main-shelf')
 const bookCards = document.querySelectorAll('.book-card');
 
 
+const apiKey = 'AIzaSyCatwj23gOQmzDSqE6Lplm9Dgc3IDBKkWg'
 let activeShelf = null;
+
+
+window.addEventListener('DOMContentLoaded',()=>{
+    loadSavedData();
+});
+
 
 //Opening the modal boxes
 createShelfBtn.addEventListener('click',() =>{
@@ -55,58 +63,81 @@ confirmShelfBtn.addEventListener('click',()=>{
 
     if (shelfName != ""){
         const shelfLabel = document.createElement('span');
-        shelfLabel.textContent = '✮ ${shelfName}';
-
+        shelfLabel.textContent = `✮ ${shelfName}`;
+        shelfLabel.style.display = 'block';
+        shelfLabel.style.marginTop = '30px';
         const newShelf = document.createElement('div');
         newShelf.classList.add('my-shelf');
 
         const addBookBtn = document.createElement('div');
         addBookBtn.classList.add('add-book')
-        addBookBtn.innerHTML = '<span>+<span>'
+        addBookBtn.innerHTML = '<span>+</span>'
 
         addBookBtn.addEventListener('click',() => {
-            addBookModal.style.display = 'block'
+            activeShelf = newShelf;
+            addBookModal.style.display = 'block';
         });
 
         newShelf.appendChild(addBookBtn);
-
-        document.body.insertBefore(shelfLabel,shelfModal);
-        document.body.insertBefore(newShelf, shelfModal);
+        
+    
+        document.body.insertBefore(shelfLabel,createShelfBtn);
+        document.body.insertBefore(newShelf, createShelfBtn);
 
         newShelfInput.value = '';
         shelfModal.style.display = 'none';
     };
 });
 
-addToShelf.addEventListener('click', async(e)=>{
+addToShelf.addEventListener('click', async(e)=> {
     //stopping page reload
     e.preventDefault();
     //validating if new book title has characters other than spaces
     const query = newBookTitle.value.trim();
 
-    if (query !== "" && activeShelf{
+    if (query !== "" && activeShelf) {
         try {
-            const response = await fetch('https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}');
+            const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&key=${apiKey}`);
             const data = await response.json();
-
-            if (data.items && data.items.length > 0 {
+            console.log(data);
+            
+            if (data.items && data.items.length > 0) {
                 const bookInfo = data.items[0].volumeInfo;
 
                 const title = bookInfo.title || query;
                 //applying fallback if author/cover is missing
-                const author = bookInfo.authors ? bookCardsInfo.authors[0] : "Unknown";
-                const cover = bookInfo.imageLinks && bookInfo.imageLinks.thumbnail ? bookInfo.imageLinks.thumbnail.replace('http:',"https:")
+                const author = bookInfo.authors ? bookInfo.authors[0] : "Unknown";
+                const cover = bookInfo.imageLinks && bookInfo.imageLinks.thumbnail ? bookInfo.imageLinks.thumbnail.replace('http:','https:')
                 : 'six-of-crows.png'
 
-                const newBookCard = document.createElement ('img');
-                img.src = thumbnail;
+                const newBookCard = document.createElement ('div');
+                newBookCard.classList.add('book-card')
+                const img = document.createElement ('img');
+                img.src = cover;
                 img.alt = title;
                 newBookCard.appendChild(img);
 
                 newBookCard.addEventListener('click',()=>{
                     reviewModal.style.display = 'grid';
-                })
-            });
-        };
-    });
+                });
+
+                const addButton = activeShelf.querySelector('.add-book');
+                activeShelf.insertBefore(newBookCard,addButton);
+
+                const newMasterBookCard = newBookCard.cloneNode(true);
+                
+                newMasterBookCard.addEventListener('click',()=>{
+                    reviewModal.style.display = 'grid';
+                });
+
+                const mainShelfAddButton = mainShelf.querySelector('.add-book');
+                mainShelf.insertBefore(newMasterBookCard,mainShelfAddButton);
+                
+                newBookTitle.value = '';
+                addBookModal.style.display = 'none';
+            }
+        } catch (error) {
+            console.error("Error fetching book:", error);
+        }
+    }
 });

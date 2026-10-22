@@ -76,10 +76,17 @@ nav a:hover {
 
 }
 
-
 .book-card:hover{
     transform: translateY(-8px);
     box-shadow: 6px 12px 20px rgba(0,0,0,0.6);
+}
+
+.add-book{
+    cursor: pointer;
+}
+
+.add-book:hover{
+    color: #857a77;
 }
 
 .currently-reading, .progress-tracker{
