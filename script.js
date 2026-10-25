@@ -22,6 +22,11 @@ const addTropeBtn = document.getElementById('add-trope-btn');
 const newTropeInput = document.getElementById('new-trope-input');
 const saveReviewBtn = document.getElementById('save-review-btn');
 
+let currentReads = [];
+let activeReadIndex = 0;
+
+let currentDate = new Date();
+
 // Tropes Setup
 const savedTropes = JSON.parse(localStorage.getItem('myTropes')) || []; 
 let tropesList = [
@@ -46,6 +51,95 @@ window.addEventListener('DOMContentLoaded', () => {
     initializeDefaultShelves();
     loadSavedData();
     renderTropesMenu();
+    renderCalendar();
+});
+
+function renderCalendar(){
+    const grid = document.getElementById('calendar-grid');
+    const monthYearLabel = document.getElementById('month-year');
+    if (!grid) return; 
+
+    grid.innerHTML = '';
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    if (monthYearLabel) monthYearLabel.textContent = `${monthNames[month]} ${year}`;
+
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+
+    const savedReviews = JSON.parse(localStorage.getItem('myBookReviews')) || {};
+    const savedShelves = JSON.parse(localStorage.getItem('myShelves')) || [];
+
+    const bookCoverMap = {};
+    savedShelves.forEach(shelf =>{
+        shelf.books.forEach(book =>{
+            bookCoverMap[book.title] = book.cover;
+        });
+    });
+    
+    const finishedBooksByDate = {};
+    Object.keys(savedReviews).forEach(title =>{
+        const review = savedReviews[title];
+        if (review.endDate){
+            if(!finishedBooksByDate[review.endDate]){
+                finishedBooksByDate[review.endDate] = [];
+            }
+            finishedBooksByDate[review.endDate].push({
+                title: title,
+                cover: bookCoverMap[title] || 'six-of-crows.jpg'
+            });
+        }
+    });
+
+    for (let i = 0; i < firstDayIndex; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.classList.add('calendar-day', 'empty');
+        grid.appendChild(emptyCell);
+    }
+
+    for (let day = 1; day <= totalDays; day++) {
+        const dayCell = document.createElement('div');
+        dayCell.classList.add('calendar-day');
+
+        const numberSpan = document.createElement('span');
+        numberSpan.classList.add('calendar-day-number');
+        numberSpan.textContent = day;
+        dayCell.appendChild(numberSpan);
+
+        const formattedMonth = String(month + 1).padStart(2, '0');
+        const formattedDay = String(day).padStart(2, '0');
+        const dateString = `${year}-${formattedMonth}-${formattedDay}`;
+
+        if (finishedBooksByDate[dateString]) {
+            const coversContainer = document.createElement('div');
+            coversContainer.classList.add('calendar-covers-container');
+
+            finishedBooksByDate[dateString].forEach(book => {
+                const img = document.createElement('img');
+                img.src = book.cover;
+                img.alt = book.title;
+                img.title = `Finished: ${book.title}`;
+                img.classList.add('calendar-book-badge');
+                coversContainer.appendChild(img);
+            });
+            dayCell.appendChild(coversContainer);
+        }
+
+        grid.appendChild(dayCell);
+    }
+};
+
+document.getElementById('prev-month-btn').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+});
+
+document.getElementById('next-month-btn').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
 });
 
 // Ensure default shelves have names for localStorage
@@ -95,8 +189,10 @@ function loadSavedData(){
             }
         }
     });
+    updateCurrentReads();
 };
 
+//Saving custom shelf
 function saveShelf(name){
     const savedShelves = JSON.parse(localStorage.getItem('myShelves')) || [];
     if (!savedShelves.some(s => s.name === name)) {
@@ -105,6 +201,7 @@ function saveShelf(name){
     }
 }
 
+//Saving new book
 function saveBook(shelfName, title, cover, author = "Unknown", genre = "N/A", pages = "N/A", status){
     const savedShelves = JSON.parse(localStorage.getItem('myShelves')) || [];
     const target = savedShelves.find(s => s.name === shelfName);
@@ -147,6 +244,7 @@ shelfCloseBtn.addEventListener('click', () => { shelfModal.style.display = 'none
 addBookCloseBtn.addEventListener('click', () => { addBookModal.style.display = 'none'; });
 reviewCloseBtn.addEventListener('click', () => { reviewModal.style.display = 'none'; });
 
+//Creating a new shelf
 function createShelf(shelfName, books){
     const shelfLabel = document.createElement('span');
     shelfLabel.textContent = `✮ ${shelfName}`;
@@ -191,6 +289,7 @@ confirmShelfBtn.addEventListener('click', () => {
     }
 });
 
+//Creating new book card
 function createBookCard(shelf, title, cover, author = "Unknown", genre = "N/A", pages = "N/A"){
     const newBookCard = document.createElement('div');
     newBookCard.classList.add('book-card');
@@ -260,6 +359,8 @@ addToShelf.addEventListener('click', async(e) => {
     }
 });
 
+
+//Opening review
 function openReview(bookData){
     currentReviewBook = bookData.title;
 
@@ -436,6 +537,8 @@ saveReviewBtn.addEventListener('click', () => {
     reviewModal.style.display = 'none';
 });
 
+
+//Transferring book to DNF shelf
 function shelveAsDNF(title, cover='six-of-crows.jpg'){
     const dnfShelf = document.getElementById('dnf-shelf');
 
@@ -462,3 +565,127 @@ function shelveAsDNF(title, cover='six-of-crows.jpg'){
 
     dnfShelf.appendChild(dnfCard);
 };
+
+function updateCurrentReads(){
+    currentlyReadingBooks = [];
+    const savedShelves = JSON.parse(localStorage.getItem('myShelves')) || [];
+    const savedReviews = JSON.parse(localStorage.getItem('myBookReviews')) || {};
+
+    savedShelves.forEach(shelf => {
+        shelf.books.forEach(book => {
+            if (book.status === 'reading') {
+                const review = savedReviews[book.title] || {};
+                if (!currentlyReadingBooks.some(b => b.title === book.title)) {
+                    currentlyReadingBooks.push({
+                        title: book.title,
+                        author: book.author || 'Unknown',
+                        cover: book.cover || 'six-of-crows.jpg',
+                        currentPage: review.currentPage || 0,
+                        totalPages: review.totalPages || parseInt(book.pages) || 0
+                    });
+                }
+            }}
+        )}
+    )
+if (activeReadIndex >= currentlyReadingBooks.length) {
+        activeReadIndex = Math.max(0, currentlyReadingBooks.length - 1);
+    }
+    renderDashboardWidget();
+};
+
+function renderDashboardWidget() {
+    const currentTitle = document.getElementById('current-title');
+    const currentAuthor = document.getElementById('current-author');
+    const coverImg = document.querySelector('.currently-reading img');
+    const pagesSpan = document.getElementById('progress-pages');
+    const pageInput = document.getElementById('current-page-input');
+    const indexSpan = document.getElementById('current-read-index');
+    const progressFill = document.getElementById('progress-fill');
+
+    if (currentlyReadingBooks.length === 0) {
+        if (currentTitle) currentTitle.textContent = "No active read";
+        if (currentAuthor) currentAuthor.textContent = "";
+        if (coverImg) coverImg.src = "six-of-crows.jpg";
+        if (pagesSpan) pagesSpan.textContent = "Page 0 of 0";
+        if (pageInput) pageInput.value = 0;
+        if (indexSpan) indexSpan.textContent = "0 / 1";
+        if (progressFill) {
+            let inner = progressFill.querySelector('.progress-inner');
+            if (inner) inner.style.width = "0%";
+        }
+        return;
+    }
+
+    const currentBook = currentlyReadingBooks[activeReadIndex];
+
+    if (currentTitle) currentTitle.textContent = currentBook.title;
+    if (currentAuthor) currentAuthor.textContent = currentBook.author;
+    if (coverImg) coverImg.src = currentBook.cover;
+    if (pagesSpan) pagesSpan.textContent = `Page ${currentBook.currentPage} of ${currentBook.totalPages}`;
+    if (pageInput) pageInput.value = currentBook.currentPage;
+    if (indexSpan) indexSpan.textContent = `${activeReadIndex + 1} / ${currentlyReadingBooks.length}`;
+
+
+    if (progressFill) {
+        let inner = progressFill.querySelector('.progress-inner');
+        if (!inner) {
+            progressFill.style.position = 'relative';
+            progressFill.style.overflow = 'hidden';
+            inner = document.createElement('div');
+            inner.classList.add('progress-inner');
+            inner.style.height = '100%';
+            inner.style.backgroundColor = 'var(--accent-color)';
+            inner.style.borderRadius = '5px';
+            inner.style.transition = 'width 0.3s ease';
+            progressFill.appendChild(inner);
+        }
+        const percentage = currentBook.totalPages > 0 
+            ? Math.min(Math.round((currentBook.currentPage / currentBook.totalPages) * 100), 100) 
+            : 0;
+        inner.style.width = `${percentage}%`;
+    }
+}
+
+document.getElementById('prev-read-btn')?.addEventListener('click', () => {
+    if (currentlyReadingBooks.length > 0) {
+        activeReadIndex = (activeReadIndex - 1 + currentlyReadingBooks.length) % currentlyReadingBooks.length;
+        renderDashboardWidget();
+    }
+});
+
+document.getElementById('next-read-btn')?.addEventListener('click', () => {
+    if (currentlyReadingBooks.length > 0) {
+        activeReadIndex = (activeReadIndex + 1) % currentlyReadingBooks.length;
+        renderDashboardWidget();
+    }
+});
+
+document.getElementById('update-progress-btn')?.addEventListener('click', () => {
+    if (currentlyReadingBooks.length === 0) return;
+
+    const currentBook = currentlyReadingBooks[activeReadIndex];
+    const newPage = parseInt(document.getElementById('current-page-input').value) || 0;
+    
+    currentBook.currentPage = newPage;
+
+    const savedReviews = JSON.parse(localStorage.getItem('myBookReviews')) || {};
+    if (!savedReviews[currentBook.title]) savedReviews[currentBook.title] = {};
+    savedReviews[currentBook.title].currentPage = newPage;
+
+    if (currentBook.totalPages > 0 && newPage >= currentBook.totalPages) {
+        savedReviews[currentBook.title].status = 'read';
+        
+        let savedShelves = JSON.parse(localStorage.getItem('myShelves')) || [];
+        savedShelves.forEach(shelf => {
+            shelf.books.forEach(b => {
+                if (b.title === currentBook.title) b.status = 'read';
+            });
+        });
+        localStorage.setItem('myShelves', JSON.stringify(savedShelves));
+        alert(`🎉 Congratulations! You finished "${currentBook.title}"!`);
+    }
+
+    localStorage.setItem('myBookReviews', JSON.stringify(savedReviews));
+    loadSavedData();
+    updateCurrentReads();
+});

@@ -7,8 +7,8 @@
 <body>
     <nav>
     <ul>
-        <li><a href="#">My Books</a></li>
-        <li><a href="#">Reading Log</a></li>
+        <li><a href="index.html">My Books</a></li>
+        <li><a href="log.html">Reading Log</a></li>
         <li><a href="#">TBR</a></li>
        </ul>
     </nav>
@@ -24,6 +24,15 @@
                 <p id="current-author">Book Author</p>
                 <div id="progress-fill"></div>
                 <span id="progress-pages">Page x of x</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="number" id="current-page-input" min="0" style="width: 55px; padding: 2px 4px; text-align: center;">
+                <button id="update-progress-btn" style="padding: 2px 8px; cursor: pointer; background: var(--accent-color); border: none; color: white; border-radius: 4px; font-size: 0.8rem;">Log</button>
+            </div>
+                        <div class="carousel-controls" style="display: flex; gap: 8px;">
+            <button id="prev-read-btn" style="cursor: pointer; background: transparent; border: none; color: #e0d0b6;">◄</button>
+            <span id="current-read-index" style="font-size: 0.8rem; opacity: 0.8;">1 / 1</span>
+            <button id="next-read-btn" style="cursor: pointer; background: transparent; border: none; color: #e0d0b6;">►</button>
             </div>
         </div>
 
