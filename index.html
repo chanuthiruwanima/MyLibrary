@@ -13,15 +13,6 @@
        </ul>
     </nav>
     <div class="my-shelf" id="main-shelf">
-        <div class="book-card">
-            <img src="six-of-crows.jpg">
-        </div>
-              <div class="book-card">
-                <img src="death-on-the-nile.jpg">
-        </div>
-              <div class="book-card">
-                <img src="midnight-library.jpg">
-        </div>
     </div>
 
     <div id="dashboard">
@@ -48,19 +39,11 @@
     </div>
      <span>✮ Favourites</span>
     <div class="my-shelf" id="favourites-shelf">
-        <div class="book-card">
-            <img src="six-of-crows.jpg">
-        </div>
-              <div class="book-card">
-                <img src="death-on-the-nile.jpg">
-        </div>
-              <div class="book-card">
-                <img src="midnight-library.jpg">
-        </div>
         <div id="add-book-favourites" class="add-book">
             <span>+</span>
         </div>
     </div>
+
     
     <div id="add-book-modal" class="modal">
          <span id="add-book-close" class="closeBtn">X</span>
@@ -75,7 +58,11 @@
         <input type="text" id="new-shelf-name" placeholder="shelf name..." required>
         <button id="confirm-shelf" class="submit-btn">Create Shelf</button>
     </div>
-
+    <br>
+        <span style="font-style: italic; font-size: 1.2rem;"> 𖤘 Corner of Frozen Bookmarks</span>
+    <div class="my-shelf" id="dnf-shelf" style="opacity: 0.65; filter: sepia(0.8);">
+        </div>
+    </div>
     <div class="modal" id="review-modal">
         <span id="review-close" class="closeBtn">X</span>
         <div class="book-cover"><img id="review-cover-img" src=""></div>
@@ -84,6 +71,16 @@
         <h3 id="review-author">Author</h3>
         <h3 id="review-genre">Genre</h3>
         <h3 id="review-pages">Pages</h3>
+
+        <div class="status-tag">
+            <label for="review-status">Status:</label>
+        <select id="review-status">
+            <option value="tbr">📖 To Be Read (TBR)</option>
+            <option value="reading">⏳ Currently Reading</option>
+            <option value="read">✅ Read</option>
+            <option value="dnf"> 🛑 DNF</option>
+        </select>
+        </div>
         </div>
         <div class="date-row">
         <div>

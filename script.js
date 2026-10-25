@@ -48,7 +48,7 @@ window.addEventListener('DOMContentLoaded', () => {
     renderTropesMenu();
 });
 
-// Ensure default static shelves have names for localStorage
+// Ensure default shelves have names for localStorage
 function initializeDefaultShelves() {
     if (mainShelf) mainShelf.dataset.shelfName = "Main Library";
     if (favouritesShelf) favouritesShelf.dataset.shelfName = "Favourites";
@@ -67,18 +67,31 @@ function initializeDefaultShelves() {
 
 // Loading saved data
 function loadSavedData(){
+    const dnfShelf = document.getElementById('dnf-shelf');
+    if (dnfShelf) dnfShelf.innerHTML = '';
+    const shelves = document.querySelectorAll('.my-shelf');
+    shelves.forEach(shelf => {
+        shelf.querySelectorAll('.book-card').forEach(card => card.remove());
+    });
+    document.querySelectorAll('.custom-shelf').forEach(el => el.remove());
+
     const savedShelves = JSON.parse(localStorage.getItem('myShelves')) || [];
     savedShelves.forEach(shelfData => {
-        // Skip custom creation for main shelf since it's already in HTML
+        // Skip custom creation for main shelf
         if (shelfData.name !== "Main Library" && shelfData.name !== "Favourites") {
             createShelf(shelfData.name, shelfData.books);
         } else {
-            // Populate books into existing static shelves
+            // Populate books into existing  shelves
             const targetShelf = shelfData.name === "Main Library" ? mainShelf : favouritesShelf;
             if (targetShelf) {
                 shelfData.books.forEach(book => {
+                    if (book.status === 'dnf'){
+                        shelveAsDNF(book.title, book.cover);
+                    }
+                    else {
                     createBookCard(targetShelf, book.title, book.cover, book.author, book.genre, book.pages);
-                });
+                    }    
+            });
             }
         }
     });
@@ -92,13 +105,13 @@ function saveShelf(name){
     }
 }
 
-function saveBook(shelfName, title, cover, author = "Unknown", genre = "N/A", pages = "N/A"){
+function saveBook(shelfName, title, cover, author = "Unknown", genre = "N/A", pages = "N/A", status){
     const savedShelves = JSON.parse(localStorage.getItem('myShelves')) || [];
     const target = savedShelves.find(s => s.name === shelfName);
     if (target){
-        // Prevent duplicate entries of the exact same book title on the same shelf
+        // Prevent duplicate entries
         if (!target.books.some(b => b.title === title)) {
-            target.books.push({ title, cover, author, genre, pages });
+            target.books.push({ title, cover, author, genre, pages, status});
             localStorage.setItem('myShelves', JSON.stringify(savedShelves));
         }
     }
@@ -118,7 +131,7 @@ addBookBtns.forEach(btn => {
 
 bookCards.forEach(card => {
     card.addEventListener('click', () => {
-        // Default dummy data for initial HTML hardcoded cards
+        // Default data for fallback
         openReview({
             title: card.querySelector('img')?.alt || "Book Title",
             author: "Unknown",
@@ -137,11 +150,12 @@ reviewCloseBtn.addEventListener('click', () => { reviewModal.style.display = 'no
 function createShelf(shelfName, books){
     const shelfLabel = document.createElement('span');
     shelfLabel.textContent = `✮ ${shelfName}`;
+    shelfLabel.classList.add('custom-shelf');
     shelfLabel.style.display = 'block';
     shelfLabel.style.marginTop = '30px';
     
     const newShelf = document.createElement('div');
-    newShelf.classList.add('my-shelf');
+    newShelf.classList.add('my-shelf','custom-shelf');
     newShelf.dataset.shelfName = shelfName;
 
     const addBookBtn = document.createElement('div');
@@ -154,11 +168,13 @@ function createShelf(shelfName, books){
     });
 
     newShelf.appendChild(addBookBtn);
-    
     books.forEach(book => {
-        createBookCard(newShelf, book.title, book.cover, book.author, book.genre, book.pages);
+        if (book.status === 'dnf') {
+            shelveAsDNF(book.title, book.cover);
+        } else {
+            createBookCard(newShelf, book.title, book.cover, book.author, book.genre, book.pages);
+        }
     });
-
     document.body.insertBefore(shelfLabel, createShelfBtn);
     document.body.insertBefore(newShelf, createShelfBtn);    
 
@@ -195,7 +211,7 @@ function createBookCard(shelf, title, cover, author = "Unknown", genre = "N/A", 
         shelf.appendChild(newBookCard);
     }
 
-    // Mirror to Master Library (#main-shelf) if not already adding to main shelf
+    // Mirror to Master Library
     if (shelf !== mainShelf) {
         const newMasterBookCard = newBookCard.cloneNode(true);
         newMasterBookCard.addEventListener('click', () => {
@@ -251,6 +267,7 @@ function openReview(bookData){
     document.getElementById('review-author').textContent = `Author: ${bookData.author}`;
     document.getElementById('review-genre').textContent = `Genre: ${bookData.genre}`;
     document.getElementById('review-pages').textContent = `${bookData.pages || 'N/A'} pages`;
+    
 
     const coverImg = document.getElementById('review-cover-img');
     if (coverImg) {
@@ -265,6 +282,7 @@ function openReview(bookData){
     document.getElementById('review-end-date').value = reviewData.endDate || '';
     document.getElementById('review-text').value = reviewData.review || '';
     document.getElementById('review-quotes').value = reviewData.quotes || '';
+    document.getElementById('review-status').value =  reviewData.status 
 
     renderRatingStars(reviewData.rating || 0);
     renderTropes(reviewData.tropes || []);
@@ -294,7 +312,6 @@ function renderRatingStars(selectedRating = 0){
     ratingBox.appendChild(starsContainer);
 };
 
-// Target specifically the selected tropes container so we don't wipe out the menu
 function renderTropes(tropesArray){
     const tropesContainer = document.getElementById('selected-tropes-tags');
     if (!tropesContainer) return;
@@ -320,7 +337,6 @@ function renderTropes(tropesArray){
     tropesContainer.dataset.tropes = JSON.stringify(tropesArray);
 }
 
-// Renders the quick-select preset buttons into the modal menu
 function renderTropesMenu(){
     const container = document.getElementById('tropes-options-container');
     if (!container) return;
@@ -389,6 +405,7 @@ saveReviewBtn.addEventListener('click', () => {
     }
     const tropesContainer = document.getElementById('selected-tropes-tags');
     const tropes = JSON.parse(tropesContainer.dataset.tropes || '[]');
+    const status = document.getElementById('review-status').value;
 
     const reviewPayload = {
         startDate: document.getElementById('review-start-date').value,
@@ -396,13 +413,52 @@ saveReviewBtn.addEventListener('click', () => {
         rating: rating,
         review: document.getElementById('review-text').value,
         quotes: document.getElementById('review-quotes').value,
+        status: status,
         tropes: tropes
+
     };
 
     const savedReviews = JSON.parse(localStorage.getItem('myBookReviews')) || {};
     savedReviews[currentReviewBook] = reviewPayload;
     localStorage.setItem('myBookReviews', JSON.stringify(savedReviews));
-
+    let savedShelves = JSON.parse(localStorage.getItem('myShelves')) || [];
+    savedShelves.forEach(shelf => {
+        shelf.books.forEach(book => {
+            if (book.title === currentReviewBook) {
+                book.status = status;
+            }
+        });
+    });
+    
+    localStorage.setItem('myShelves', JSON.stringify(savedShelves));
+    loadSavedData();
     alert('Review saved');
     reviewModal.style.display = 'none';
 });
+
+function shelveAsDNF(title, cover='six-of-crows.jpg'){
+    const dnfShelf = document.getElementById('dnf-shelf');
+
+    const alreadyExists = Array.from(dnfShelf.children).some(card => {
+        return card.querySelector('img')?.alt === title;
+    });
+    if (alreadyExists) return;
+    const dnfCard = document.createElement('div');
+    dnfCard.classList.add('book-card');
+    dnfCard.style.opacity = '0.7'; 
+    dnfCard.innerHTML = `<img src="${cover}" alt="${title}" title="${title} (DNF)">`;
+
+    dnfCard.addEventListener('click', () => {
+            const savedReviews = JSON.parse(localStorage.getItem('myBookReviews')) || {};
+            const reviewData = savedReviews[title] || {};
+            openReview({
+                title: title,
+                author: "Unknown",
+                genre: "N/A",
+                pages: reviewData.totalPages || "N/A",
+                cover: cover
+            });
+        });
+
+    dnfShelf.appendChild(dnfCard);
+};
