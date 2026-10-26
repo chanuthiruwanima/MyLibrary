@@ -296,3 +296,45 @@ nav a:hover {
     overflow-y: auto;
     max-height: 55px;
 }
+
+.stats-grid{
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap:15px;
+}
+.stat-item .stat-value{
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.stat item .stat-label{
+    font-size: 0.8rem;
+    opacity:0.8;
+}
+
+.vibe-breakdown{
+    border-top: 1px solid rgba(108, 60, 10, 0.2);
+    padding-top: 10px;
+    text-align: center;
+}
+
+.vibe-tags-container{
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    gap:6px;
+    margin-top: 6px;
+}
+
+.vibe-tag{
+    background: var(--secondary-color);
+    border: 1px solid var(--accent-color);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color:white;
+
+}

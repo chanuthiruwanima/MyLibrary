@@ -23,6 +23,240 @@
         </div>
         <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;"></div>
     </div>
-    <script src="script.js"></script>
+    <div class="dashboard">
+        <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-books-read">0</div>
+                    <div class="stat-label">Books Finished</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-pages-read">0</div>
+                    <div class="stat-label">Pages Read</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-avg-rating">-</div>
+                    <div class="stat-label">Avg Rating</div>
+                </div>
+            </div>
+            <div class="vibe-breakdown">
+                <span style="font-size: 0.85rem; font-weight: bold;">Monthly Vibe:</span>
+                <div class="vibe-tags-container" id="stat-vibe-tags">
+                    <span style="font-size: 0.75rem; opacity: 0.7; font-style: italic;">No reads logged this month yet</span>
+                </div>
+            </div>
+    </div>
+
+    <div class="yearly-stats">
+        <h3 style="color: var(--secondary-color); font-size: 1.1rem; text-align: center;">.✦ ݁˖<span id="year">2026</span>Highlights</h3>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 10px; font-weight: bold;">
+            <span><span id="year">2026</span> Reading Goal</span>
+            <span id="yearly-goal">0/50 Books</span>
+            <input type="number" id="custom-yearly-goal" min="1" max="365" value="50" title="Change yearly goal" style="width: 45px; padding: 2px; text-align: center; background: transparent; border: 1px solid var(--secondary-color); border-radius: 4px; font-family: Georgia, serif; font-size: 0.8rem;">
+        </div>
+        <div style="width: 100%; background-color: rgba(119,77,48,0.2); height: 12px; border-radius: 6px; overflow: hidden; position: relative;">
+            <div id="yearly-progress-fill" style="width: 0%; height: 100%; background-color: var(--accent-color); border-radius: 6px; transition: width 0.3s ease;"></div>
+        </div>
+    </div>
+    <script>
+        let currentDate = new Date();
+        window.addEventListener('DOMContentLoaded', () => {
+            renderCalendar();
+        });
+    
+function renderCalendar(){
+    const grid = document.getElementById('calendar-grid');
+    const monthYearLabel = document.getElementById('month-year');
+    if (!grid) return; 
+
+    grid.innerHTML = '';
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    let savedYearlyGoal = localStorage.getItem('myYearlyGoal') || 50;
+    const goalInput = document.getElementById('yearly-goal-input');
+
+    if(goalInput){
+        goalInput.value = savedYearlyGoal;
+    }
+
+    goalInput.addEventListener('change',(e)=>{
+        const newGoal = parse(e.target.value) || 50
+        localStorage.setItem('myYearlyGoal',newGoal);
+        renderCalendar();
+    })
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    if (monthYearLabel) monthYearLabel.textContent = `${monthNames[month]} ${year}`;
+
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+
+    const savedReviews = JSON.parse(localStorage.getItem('myBookReviews')) || {};
+    const savedShelves = JSON.parse(localStorage.getItem('myShelves')) || [];
+
+    const bookInfoMap = {};
+    savedShelves.forEach(shelf =>{
+        shelf.books.forEach(book =>{
+            bookInfoMap[book.title] = {
+                cover: book.cover || 'six-of-crows.jpg',
+                genre: book.genre || 'N/A',
+                pages: parseInt(book.pages) || 0
+            }
+        });
+    });
+
+    const formattedCurrentMonth = String(month+1).padStart(2,'0');
+    const monthPrefix = `${year}-${formattedCurrentMonth}`;
+    const yearPrefix = `${year}-`;
+
+    let monthBookCount = 0;
+    let monthPageCount =0;
+    let totalRatingSum = 0;
+    let ratedBooksCount =0;
+    const vibeCurrent = {};
+    let yearBookCount = 0;
+    let yearPageCount = 0;
+    let longestBookPages = 0;
+    const yearVibe = {};
+    
+    const finishedBooksByDate = {};
+    Object.keys(savedReviews).forEach(title =>{
+        const review = savedReviews[title];
+        const bookInfo = bookInfoMap[title] || {}
+        if (review.endDate){
+            if(!finishedBooksByDate[review.endDate]){
+                finishedBooksByDate[review.endDate] = [];
+            }
+            finishedBooksByDate[review.endDate].push({
+                title: title,
+                cover: bookInfo.cover || 'six-of-crows.jpg'
+            });
+        }
+        if (review.endDate && review.endDate.startsWith(monthPrefix)){
+            monthBookCount ++;
+            const bookInfo = bookInfoMap[title] || {};
+            const pages = review.totalPages||bookInfo.pages || 0;
+            monthPageCount += pages;
+            
+            if (review.rating && review.rating>0){
+                totalRatingSum += review.rating;
+                ratedBooksCount++;
+            }
+
+            if (review.tropes && Array.isArray(review.tropes)){
+                review.tropes.forEach(trope =>{
+                    vibeCurrent[trope] = (vibeCurrent[trope]||0)+1
+
+                })
+            }
+            if (bookInfo.genre  && bookInfo.genre !== 'N/A'){
+                vibeCurrent[bookInfo.genre] = (vibeCurrent[bookInfo.genre] || 0)+1
+            }
+        }
+
+        if (review.endDate && review.endDate.startsWith(yearPrefix)){
+            yearBookCount ++;
+            const bookInfo = bookInfoMap[title] || {};
+            const pages = review.totalPages||bookInfo.pages || 0;
+            yearPageCount += pages;
+            
+            if (pages > longestBookPages) {
+                        longestBookPages = pages;
+                        longestBookTitle = title;
+                    }
+
+            if (review.tropes && Array.isArray(review.tropes)){
+                review.tropes.forEach(trope =>{
+                    yearVibe[trope] = (yearVibe[trope]||0)+1
+
+                })
+            }
+            if (bookInfo.genre  && bookInfo.genre !== 'N/A'){
+                yearVibe[bookInfo.genre] = (vibeCurrent[bookInfo.genre] || 0)+1
+            }
+        }
+    });
+
+    for (let i = 0; i < firstDayIndex; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.classList.add('calendar-day', 'empty');
+        grid.appendChild(emptyCell);
+    }
+
+    for (let day = 1; day <= totalDays; day++) {
+        const dayCell = document.createElement('div');
+        dayCell.classList.add('calendar-day');
+
+        const numberSpan = document.createElement('span');
+        numberSpan.classList.add('calendar-day-number');
+        numberSpan.textContent = day;
+        dayCell.appendChild(numberSpan);
+
+        const formattedMonth = String(month + 1).padStart(2, '0');
+        const formattedDay = String(day).padStart(2, '0');
+        const dateString = `${year}-${formattedMonth}-${formattedDay}`;
+
+        if (finishedBooksByDate[dateString]) {
+            const coversContainer = document.createElement('div');
+            coversContainer.classList.add('calendar-covers-container');
+
+            finishedBooksByDate[dateString].forEach(book => {
+                const img = document.createElement('img');
+                img.src = book.cover;
+                img.alt = book.title;
+                img.title = `Finished: ${book.title}`;
+                img.classList.add('calendar-book-badge');
+                coversContainer.appendChild(img);
+            });
+            dayCell.appendChild(coversContainer);
+        }
+
+        grid.appendChild(dayCell);
+    }
+
+    
+const vibeTagsContainer = document.getElementById('stat-vibe-tags');
+vibeTagsContainer.innerHTML= '';
+const sortedVibes = Object.keys(vibeCurrent).sort((a, b) => vibeCurrent[b] - vibeCurrent[a]);
+if (sortedVibes.length === 0) {
+    vibeTagsContainer.innerHTML = '<span style="font-size: 0.75rem; opacity: 0.7; font-style: italic;">No tropes or genres logged this month</span>';
+} else {
+    sortedVibes.slice(0, 4).forEach(vibe => {
+        const tag = document.createElement('span');
+        tag.classList.add('vibe-tag');
+        tag.textContent = vibe.startsWith('#') ? vibe : `#${vibe}`;
+        vibeTagsContainer.appendChild(tag);
+    });
+}
+
+document.getElementById('stat-books-read').textContent = monthBookCount
+document.getElementById('stat-pages-read').textContent = monthPageCount
+const avgRating = ratedBooksCount>0? (totalRatingSum/ratedBooksCount).toFixed(1)+' ★' : '-';
+document.getElementById('stat-avg-rating').textContent = avgRating;
+};
+
+document.getElementById('year').textContent = year;
+document.getElementById('year-pages-read').textContent = yearPageCount;
+const sortedYearVibes = Object.keys(yearVibeFrequency).sort((a, b) => yearVibeFrequency[b] - yearVibeFrequency[a]);
+        document.getElementById('year-top-genre').textContent = sortedYearVibes.length > 0 ? sortedYearVibes[0] : '-';
+        document.getElementById('year-longest-book').textContent = longestBookPages > 0 ? `${longestBookTitle} (${longestBookPages}p)` : '-';
+        const yearlyGoalTarget = 50; 
+        const goalPercentage = Math.min(Math.round((yearBookCount / yearlyGoalTarget) * 100), 100);
+        document.getElementById('yearly-goal-text').textContent = `${yearBookCount} / ${yearlyGoalTarget} Books (${goalPercentage}%)`;
+        document.getElementById('yearly-progress-fill').style.width = `${goalPercentage}%`;
+
+document.getElementById('prev-month-btn').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+});
+
+document.getElementById('next-month-btn').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+});
+
+
+</script>
     </body>
 </html>

@@ -25,7 +25,6 @@ const saveReviewBtn = document.getElementById('save-review-btn');
 let currentReads = [];
 let activeReadIndex = 0;
 
-let currentDate = new Date();
 
 // Tropes Setup
 const savedTropes = JSON.parse(localStorage.getItem('myTropes')) || []; 
@@ -51,96 +50,9 @@ window.addEventListener('DOMContentLoaded', () => {
     initializeDefaultShelves();
     loadSavedData();
     renderTropesMenu();
-    renderCalendar();
 });
 
-function renderCalendar(){
-    const grid = document.getElementById('calendar-grid');
-    const monthYearLabel = document.getElementById('month-year');
-    if (!grid) return; 
 
-    grid.innerHTML = '';
-
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    if (monthYearLabel) monthYearLabel.textContent = `${monthNames[month]} ${year}`;
-
-    const firstDayIndex = new Date(year, month, 1).getDay();
-    const totalDays = new Date(year, month + 1, 0).getDate();
-
-    const savedReviews = JSON.parse(localStorage.getItem('myBookReviews')) || {};
-    const savedShelves = JSON.parse(localStorage.getItem('myShelves')) || [];
-
-    const bookCoverMap = {};
-    savedShelves.forEach(shelf =>{
-        shelf.books.forEach(book =>{
-            bookCoverMap[book.title] = book.cover;
-        });
-    });
-    
-    const finishedBooksByDate = {};
-    Object.keys(savedReviews).forEach(title =>{
-        const review = savedReviews[title];
-        if (review.endDate){
-            if(!finishedBooksByDate[review.endDate]){
-                finishedBooksByDate[review.endDate] = [];
-            }
-            finishedBooksByDate[review.endDate].push({
-                title: title,
-                cover: bookCoverMap[title] || 'six-of-crows.jpg'
-            });
-        }
-    });
-
-    for (let i = 0; i < firstDayIndex; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.classList.add('calendar-day', 'empty');
-        grid.appendChild(emptyCell);
-    }
-
-    for (let day = 1; day <= totalDays; day++) {
-        const dayCell = document.createElement('div');
-        dayCell.classList.add('calendar-day');
-
-        const numberSpan = document.createElement('span');
-        numberSpan.classList.add('calendar-day-number');
-        numberSpan.textContent = day;
-        dayCell.appendChild(numberSpan);
-
-        const formattedMonth = String(month + 1).padStart(2, '0');
-        const formattedDay = String(day).padStart(2, '0');
-        const dateString = `${year}-${formattedMonth}-${formattedDay}`;
-
-        if (finishedBooksByDate[dateString]) {
-            const coversContainer = document.createElement('div');
-            coversContainer.classList.add('calendar-covers-container');
-
-            finishedBooksByDate[dateString].forEach(book => {
-                const img = document.createElement('img');
-                img.src = book.cover;
-                img.alt = book.title;
-                img.title = `Finished: ${book.title}`;
-                img.classList.add('calendar-book-badge');
-                coversContainer.appendChild(img);
-            });
-            dayCell.appendChild(coversContainer);
-        }
-
-        grid.appendChild(dayCell);
-    }
-};
-
-document.getElementById('prev-month-btn').addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            renderCalendar();
-});
-
-document.getElementById('next-month-btn').addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            renderCalendar();
-});
 
 // Ensure default shelves have names for localStorage
 function initializeDefaultShelves() {
@@ -242,7 +154,7 @@ bookCards.forEach(card => {
 // Closing modal boxes
 shelfCloseBtn.addEventListener('click', () => { shelfModal.style.display = 'none'; });
 addBookCloseBtn.addEventListener('click', () => { addBookModal.style.display = 'none'; });
-reviewCloseBtn.addEventListener('click', () => { reviewModal.style.display = 'none'; });
+reviewCloseBtn.addEventListener('click', () => { reviewModal.style.display = 'none'; saveReview() });
 
 //Creating a new shelf
 function createShelf(shelfName, books){
@@ -359,6 +271,13 @@ addToShelf.addEventListener('click', async(e) => {
     }
 });
 
+//Ensuring an end date means the book has been marked read
+document.getElementById('review-end-date')?.addEventListener('change', (e)=>{
+    const statusSelect = document.getElementById('review-status');
+    if (e.target.value.trim()!=='' && statusSelect){
+        statusSelect.value = 'read';
+    };
+});
 
 //Opening review
 function openReview(bookData){
@@ -497,6 +416,10 @@ addTropeBtn.addEventListener('click', (e) => {
 });
 
 saveReviewBtn.addEventListener('click', () => {
+    saveReview();
+});
+
+function saveReview(){
     if(!currentReviewBook) return;
 
     const starsContainer = document.querySelector('.star-rating');
@@ -506,11 +429,17 @@ saveReviewBtn.addEventListener('click', () => {
     }
     const tropesContainer = document.getElementById('selected-tropes-tags');
     const tropes = JSON.parse(tropesContainer.dataset.tropes || '[]');
+    const endDate = document.getElementById('review-end-date').value;
     const status = document.getElementById('review-status').value;
+    if (endDate.trim()!=='') {
+        status='read';
+    }
+
+    
 
     const reviewPayload = {
         startDate: document.getElementById('review-start-date').value,
-        endDate: document.getElementById('review-end-date').value,
+        endDate: endDate,
         rating: rating,
         review: document.getElementById('review-text').value,
         quotes: document.getElementById('review-quotes').value,
@@ -535,8 +464,7 @@ saveReviewBtn.addEventListener('click', () => {
     loadSavedData();
     alert('Review saved');
     reviewModal.style.display = 'none';
-});
-
+};
 
 //Transferring book to DNF shelf
 function shelveAsDNF(title, cover='six-of-crows.jpg'){
