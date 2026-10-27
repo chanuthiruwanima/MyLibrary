@@ -48,6 +48,7 @@
 
     <div class="yearly-stats">
         <h3 style="color: var(--secondary-color); font-size: 1.1rem; text-align: center;">.✦ ݁˖<span id="year">2026</span>Highlights</h3>
+    <div class="highlights">
         <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 10px; font-weight: bold;">
             <span><span id="year">2026</span> Reading Goal</span>
             <span id="yearly-goal">0/50 Books</span>
@@ -57,6 +58,23 @@
             <div id="yearly-progress-fill" style="width: 0%; height: 100%; background-color: var(--accent-color); border-radius: 6px; transition: width 0.3s ease;"></div>
         </div>
     </div>
+    <div class="highlights-grid">
+        <div class="highlight-card">
+            <div class="highlight-label">Total Pages Turned</div>
+            <div class="highlight-value" id="year-pages-read">0</div>
+        </div>
+
+        <div class="highlight-card">
+            <div class="highlight-label">Top Genre</div>
+            <div class="highlight-value" id="year-top-genre">N/A</div>
+        </div>
+          <div class="highlight-card">
+            <div class="highlight-label">Thickest Read</div>
+            <div class="highlight-value" id="year-thickest-read">N/A</div>
+        </div>
+    </div>
+    </div>
+ 
     <script>
         let currentDate = new Date();
         window.addEventListener('DOMContentLoaded', () => {
@@ -74,14 +92,14 @@ function renderCalendar(){
     const month = currentDate.getMonth();
 
     let savedYearlyGoal = localStorage.getItem('myYearlyGoal') || 50;
-    const goalInput = document.getElementById('yearly-goal-input');
+    const goalInput = document.getElementById('custom-yearly-goal');
 
     if(goalInput){
         goalInput.value = savedYearlyGoal;
     }
 
     goalInput.addEventListener('change',(e)=>{
-        const newGoal = parse(e.target.value) || 50
+        const newGoal = parseInt(e.target.value) || 50
         localStorage.setItem('myYearlyGoal',newGoal);
         renderCalendar();
     })
@@ -118,6 +136,7 @@ function renderCalendar(){
     let yearBookCount = 0;
     let yearPageCount = 0;
     let longestBookPages = 0;
+    let longestBookTitle = "N/A"
     const yearVibe = {};
     
     const finishedBooksByDate = {};
@@ -230,21 +249,22 @@ if (sortedVibes.length === 0) {
     });
 }
 
+document.querySelectorAll('#year').forEach(el => el.textContent = year);
+document.getElementById('year-pages-read').textContent = yearPageCount;
+const sortedYearVibes = Object.keys(yearVibe).sort((a, b) => yearVibe[b] - yearVibe[a]);
+document.getElementById('year-top-genre').textContent = sortedYearVibes.length > 0 ? sortedYearVibes[0] : '-';
+document.getElementById('year-thickest-read').textContent = longestBookPages > 0 ? `${longestBookTitle} (${longestBookPages} pages)` : 'N/A';
+const yearlyGoalTarget = 50; 
+const goalPercentage = Math.min(Math.round((yearBookCount / yearlyGoalTarget) * 100), 100);
+document.getElementById('yearly-goal').textContent = `${yearBookCount} / ${yearlyGoalTarget} Books (${goalPercentage}%)`;
+document.getElementById('yearly-progress-fill').style.width = `${goalPercentage}%`;
+
+
 document.getElementById('stat-books-read').textContent = monthBookCount
 document.getElementById('stat-pages-read').textContent = monthPageCount
 const avgRating = ratedBooksCount>0? (totalRatingSum/ratedBooksCount).toFixed(1)+' ★' : '-';
 document.getElementById('stat-avg-rating').textContent = avgRating;
 };
-
-document.getElementById('year').textContent = year;
-document.getElementById('year-pages-read').textContent = yearPageCount;
-const sortedYearVibes = Object.keys(yearVibeFrequency).sort((a, b) => yearVibeFrequency[b] - yearVibeFrequency[a]);
-        document.getElementById('year-top-genre').textContent = sortedYearVibes.length > 0 ? sortedYearVibes[0] : '-';
-        document.getElementById('year-longest-book').textContent = longestBookPages > 0 ? `${longestBookTitle} (${longestBookPages}p)` : '-';
-        const yearlyGoalTarget = 50; 
-        const goalPercentage = Math.min(Math.round((yearBookCount / yearlyGoalTarget) * 100), 100);
-        document.getElementById('yearly-goal-text').textContent = `${yearBookCount} / ${yearlyGoalTarget} Books (${goalPercentage}%)`;
-        document.getElementById('yearly-progress-fill').style.width = `${goalPercentage}%`;
 
 document.getElementById('prev-month-btn').addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() - 1);
