@@ -99,10 +99,10 @@ function renderCalendar(){
     }
 
     goalInput.addEventListener('change',(e)=>{
-        const newGoal = parseInt(e.target.value) || 50
+        const newGoal = parseInt(e.target.value) || 50;
         localStorage.setItem('myYearlyGoal',newGoal);
         renderCalendar();
-    })
+    });
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     if (monthYearLabel) monthYearLabel.textContent = `${monthNames[month]} ${year}`;
@@ -254,9 +254,9 @@ document.getElementById('year-pages-read').textContent = yearPageCount;
 const sortedYearVibes = Object.keys(yearVibe).sort((a, b) => yearVibe[b] - yearVibe[a]);
 document.getElementById('year-top-genre').textContent = sortedYearVibes.length > 0 ? sortedYearVibes[0] : '-';
 document.getElementById('year-thickest-read').textContent = longestBookPages > 0 ? `${longestBookTitle} (${longestBookPages} pages)` : 'N/A';
-const yearlyGoalTarget = 50; 
-const goalPercentage = Math.min(Math.round((yearBookCount / yearlyGoalTarget) * 100), 100);
-document.getElementById('yearly-goal').textContent = `${yearBookCount} / ${yearlyGoalTarget} Books (${goalPercentage}%)`;
+const currentGoal = parseInt(localStorage.getItem('myYearlyGoal')) || 50;
+const goalPercentage = Math.min(Math.round((yearBookCount / currentGoal) * 100), 100);
+document.getElementById('yearly-goal').textContent = `${yearBookCount} / ${currentGoal} Books (${goalPercentage}%)`;
 document.getElementById('yearly-progress-fill').style.width = `${goalPercentage}%`;
 
 

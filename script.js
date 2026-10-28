@@ -49,9 +49,58 @@ let currentReviewBook = null;
 window.addEventListener('DOMContentLoaded', () => {
     initializeDefaultShelves();
     loadSavedData();
+    renderHeader();
     renderTropesMenu();
+
 });
 
+function renderHeader(){
+    const greeting = document.getElementById('greeting');
+    const hour = new Date().getHours();
+    let greetingText = "Welcome back";
+    if (hour<5){
+        greetingText = "Did you even go to sleep??"
+    }
+    else if (hour<12){
+        greetingText = "☕ Good Morning! A chapter to start the day?"
+    }
+    else if (hour<16){
+        greetingText = "☀️ Afternoon break. Reading counts as being productive"
+    }
+    else if (hour<19){
+        greetingText = "🌆 Warm tea, quiet time and a stack of books. Perfect"
+    }
+    else if (hour<22){
+        greetingText = "🌙 Just one more chapter before bed"
+    }
+    else{
+        greetingText = "🦉 Welcome to the 'It's 1AM but I can't put this down' support group"
+    }
+    greeting.textContent = greetingText;
+
+    const quoteLibrary = [
+        {quote: "I have always imagined that Paradise will be a kind of library", author:"Jorge Luis Borges"},
+        {quote: "A reader lives a thousand lives before he dies. The man who never reads lives only one", author:"George R.R. Martin"},
+        {quote: "Books are a uniquely portable magic", author:"Stephen King"},
+        {quote: "We read to know we're not alone", author:"C.S. Lewis"},
+        {quote: "A book is a device to ignite the imagination.", author:"Alan Bennett"},
+        {quote: "Libraries were full of ideas—perhaps the most dangerous and powerful of all weapons", author:"Sarah J. Maas"},
+        {quote: "A bookstore is one of the only pieces of evidence we have that people are still thinking", author:"Jerry Seinfeld"},
+        {quote: "To learn to read is to light a fire; every syllable that is spelled out is a spark", author:"Victor Hugo"}
+    ]
+    const quote = document.getElementById('quote');
+    const quoteAuthor = document.getElementById('quote-author');
+
+    const now = new Date();
+    const start = new Date(now.getFullYear(),0,0);
+    const diff = now - start;
+    const dayOfYear = Math.floor(diff / (1000 * 60 * 60 *24));
+    const quoteIndex = dayOfYear % quoteLibrary.length;
+    const todayQuote = quoteLibrary[quoteIndex];
+
+    quote.textContent = `"${todayQuote.quote}"`;
+    quoteAuthor.textContent = `— ${todayQuote.author}`;
+}
 
 
 // Ensure default shelves have names for localStorage
@@ -592,13 +641,27 @@ document.getElementById('update-progress-btn')?.addEventListener('click', () => 
     if (currentlyReadingBooks.length === 0) return;
 
     const currentBook = currentlyReadingBooks[activeReadIndex];
+    const oldPage = currentBook.currentPage || 0;
     const newPage = parseInt(document.getElementById('current-page-input').value) || 0;
+    const pagesRead = newPage - oldPage;
     
     currentBook.currentPage = newPage;
 
     const savedReviews = JSON.parse(localStorage.getItem('myBookReviews')) || {};
     if (!savedReviews[currentBook.title]) savedReviews[currentBook.title] = {};
     savedReviews[currentBook.title].currentPage = newPage;
+
+    if (pagesRead>0){
+        const today = new Date().toISOString.split('T')[0];
+        let dailyLogs = JSON.parse(localStorage.getItem('myDailyLogs')) || {};
+
+        if (!dailyLogs[todayStr]) {
+            dailyLogs[todayStr] = [];
+        }
+
+        
+
+    }
 
     if (currentBook.totalPages > 0 && newPage >= currentBook.totalPages) {
         savedReviews[currentBook.title].status = 'read';
