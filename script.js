@@ -479,7 +479,7 @@ function saveReview(){
     const tropesContainer = document.getElementById('selected-tropes-tags');
     const tropes = JSON.parse(tropesContainer.dataset.tropes || '[]');
     const endDate = document.getElementById('review-end-date').value;
-    const status = document.getElementById('review-status').value;
+    let status = document.getElementById('review-status').value;
     if (endDate.trim()!=='') {
         status='read';
     }
@@ -544,7 +544,7 @@ function shelveAsDNF(title, cover='six-of-crows.jpg'){
 };
 
 function updateCurrentReads(){
-    currentlyReadingBooks = [];
+    currentReads = [];
     const savedShelves = JSON.parse(localStorage.getItem('myShelves')) || [];
     const savedReviews = JSON.parse(localStorage.getItem('myBookReviews')) || {};
 
@@ -552,8 +552,8 @@ function updateCurrentReads(){
         shelf.books.forEach(book => {
             if (book.status === 'reading') {
                 const review = savedReviews[book.title] || {};
-                if (!currentlyReadingBooks.some(b => b.title === book.title)) {
-                    currentlyReadingBooks.push({
+                if (!currentReads.some(b => b.title === book.title)) {
+                    currentReads.push({
                         title: book.title,
                         author: book.author || 'Unknown',
                         cover: book.cover || 'six-of-crows.jpg',
@@ -564,8 +564,8 @@ function updateCurrentReads(){
             }}
         )}
     )
-if (activeReadIndex >= currentlyReadingBooks.length) {
-        activeReadIndex = Math.max(0, currentlyReadingBooks.length - 1);
+if (activeReadIndex >= currentReads.length) {
+        activeReadIndex = Math.max(0, currentReads.length - 1);
     }
     renderDashboardWidget();
 };
@@ -579,7 +579,7 @@ function renderDashboardWidget() {
     const indexSpan = document.getElementById('current-read-index');
     const progressFill = document.getElementById('progress-fill');
 
-    if (currentlyReadingBooks.length === 0) {
+    if (currentReads.length === 0) {
         if (currentTitle) currentTitle.textContent = "No active read";
         if (currentAuthor) currentAuthor.textContent = "";
         if (coverImg) coverImg.src = "six-of-crows.jpg";
@@ -593,14 +593,14 @@ function renderDashboardWidget() {
         return;
     }
 
-    const currentBook = currentlyReadingBooks[activeReadIndex];
+    const currentBook = currentReads[activeReadIndex];
 
     if (currentTitle) currentTitle.textContent = currentBook.title;
     if (currentAuthor) currentAuthor.textContent = currentBook.author;
     if (coverImg) coverImg.src = currentBook.cover;
     if (pagesSpan) pagesSpan.textContent = `Page ${currentBook.currentPage} of ${currentBook.totalPages}`;
     if (pageInput) pageInput.value = currentBook.currentPage;
-    if (indexSpan) indexSpan.textContent = `${activeReadIndex + 1} / ${currentlyReadingBooks.length}`;
+    if (indexSpan) indexSpan.textContent = `${activeReadIndex + 1} / ${currentReads.length}`;
 
 
     if (progressFill) {
@@ -624,23 +624,23 @@ function renderDashboardWidget() {
 }
 
 document.getElementById('prev-read-btn')?.addEventListener('click', () => {
-    if (currentlyReadingBooks.length > 0) {
-        activeReadIndex = (activeReadIndex - 1 + currentlyReadingBooks.length) % currentlyReadingBooks.length;
+    if (currentReads.length > 0) {
+        activeReadIndex = (activeReadIndex - 1 + currentReads.length) % currentReads.length;
         renderDashboardWidget();
     }
 });
 
 document.getElementById('next-read-btn')?.addEventListener('click', () => {
-    if (currentlyReadingBooks.length > 0) {
-        activeReadIndex = (activeReadIndex + 1) % currentlyReadingBooks.length;
+    if (currentReads.length > 0) {
+        activeReadIndex = (activeReadIndex + 1) % currentReads.length;
         renderDashboardWidget();
     }
 });
 
 document.getElementById('update-progress-btn')?.addEventListener('click', () => {
-    if (currentlyReadingBooks.length === 0) return;
+    if (currentReads.length === 0) return;
 
-    const currentBook = currentlyReadingBooks[activeReadIndex];
+    const currentBook = currentReads[activeReadIndex];
     const oldPage = currentBook.currentPage || 0;
     const newPage = parseInt(document.getElementById('current-page-input').value) || 0;
     const pagesRead = newPage - oldPage;
@@ -652,14 +652,19 @@ document.getElementById('update-progress-btn')?.addEventListener('click', () => 
     savedReviews[currentBook.title].currentPage = newPage;
 
     if (pagesRead>0){
-        const today = new Date().toISOString.split('T')[0];
+        const today = new Date().toISOString().split('T')[0];
         let dailyLogs = JSON.parse(localStorage.getItem('myDailyLogs')) || {};
 
-        if (!dailyLogs[todayStr]) {
-            dailyLogs[todayStr] = [];
+        if (!dailyLogs[today]) {
+            dailyLogs[today] = [];
         }
 
-        
+        dailyLogs[today].push({
+            title: currentBook.title,
+            pages: pagesRead
+        });
+
+        localStorage.setItem('myDailyLogs', JSON.stringify(dailyLogs));
 
     }
 

@@ -12,6 +12,19 @@
         <li><a href="#">TBR</a></li>
        </ul>
     </nav>
+
+    <div class="library-card">
+        <div class="card-header">
+            <span>LIBRARY CARD</span>
+            <span id="card-month-label">MONTH XXXX</span>
+        </div>
+        <div class="card-book-list" id="library-card-books">
+    </div>
+
+    </div>
+        <div class="divider">
+    <span>₊˚⊹꒷</span><span>◆</span><span>꒷⊹˚₊</span>
+    </div>
     <div id="reading-log" style="padding: 20px; max-width: 800px; margin: 0 auto;">
         <div id="calendar-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <button id="prev-month-btn" style="background: var(--secondary-color); color: var(--primary-color); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">◄</button>
@@ -47,7 +60,7 @@
     </div>
 
     <div class="yearly-stats">
-        <h3 style="color: var(--secondary-color); font-size: 1.1rem; text-align: center;">.✦ ݁˖<span id="year">2026</span>Highlights</h3>
+        <h3 style="color: var(--secondary-color); font-size: 1.1rem; text-align: center;">.✦ ݁˖<span id="year">XXXX</span> Highlights</h3>
     <div class="highlights">
         <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 10px; font-weight: bold;">
             <span><span id="year">2026</span> Reading Goal</span>
@@ -80,6 +93,8 @@
         window.addEventListener('DOMContentLoaded', () => {
             renderCalendar();
         });
+
+
     
 function renderCalendar(){
     const grid = document.getElementById('calendar-grid');
@@ -139,6 +154,56 @@ function renderCalendar(){
     let longestBookTitle = "N/A"
     const yearVibe = {};
     
+    const cardBooksContainer = document.getElementById('library-card-books');
+    const cardMonthLabel = document.getElementById('card-month-label');
+    if (cardMonthLabel) cardMonthLabel.textContent = `${monthNames[month].toUpperCase()} ${year}`;
+    
+    if (cardBooksContainer) {
+        cardBooksContainer.innerHTML = '';
+        const monthlyBooksSet = new Set();
+
+        const formattedCurrentMonth = String(month + 1).padStart(2, '0');
+        const monthPrefix = `${year}-${formattedCurrentMonth}`; 
+
+        Object.keys(savedReviews).forEach(title => {
+            const rev = savedReviews[title];
+
+            const startedHere = rev.startDate && rev.startDate.startsWith(monthPrefix);
+            const endedHere = rev.endDate && rev.endDate.startsWith(monthPrefix);
+        
+            let isActivelyReadingThisMonth = false;
+            if (rev.status === 'reading') {
+                const startMonth = rev.startDate ? rev.startDate.substring(0, 7) : '';
+                const endMonth = rev.endDate ? rev.endDate.substring(0, 7) : '';
+
+                if ((!startMonth || startMonth <= monthPrefix) && (!endMonth || endMonth >= monthPrefix)) {
+                    isActivelyReadingThisMonth = true;
+                }
+            }
+            
+            if (startedHere || endedHere || isActivelyReadingThisMonth) {
+                monthlyBooksSet.add(title);
+            }
+        });
+
+        const activeMonthBooks = Array.from(monthlyBooksSet);
+
+        if (activeMonthBooks.length === 0) {
+            for (let i = 1; i <= 5; i++) {
+                const emptyRow = document.createElement('div');
+                emptyRow.classList.add('card-empty-row');
+                emptyRow.textContent = `— no book checked out for this month —`;
+                cardBooksContainer.appendChild(emptyRow);
+            }
+        } else {
+            activeMonthBooks.forEach(title => {
+                const row = document.createElement('div');
+                row.classList.add('card-book-row');
+                row.innerHTML = `<span> ${title}</span> <span style="font-size: 0.75rem; opacity: 0.7; font-family: Georgia, serif;">── .✦</span>`;
+                cardBooksContainer.appendChild(row);
+            });
+        }
+    }
     const finishedBooksByDate = {};
     Object.keys(savedReviews).forEach(title =>{
         const review = savedReviews[title];
@@ -215,6 +280,17 @@ function renderCalendar(){
         const formattedMonth = String(month + 1).padStart(2, '0');
         const formattedDay = String(day).padStart(2, '0');
         const dateString = `${year}-${formattedMonth}-${formattedDay}`;
+        const dailyLogs = JSON.parse(localStorage.getItem('myDailyLogs')) || {};
+
+        if(dailyLogs[dateString]){
+            const progressBadge = document.createElement('div');
+            progressBadge.classList.add('daily-progress-badge');
+
+            const totalPagesToday = dailyLogs[dateString].reduce((sum, entry) => sum + entry.pages, 0);
+            progressBadge.innerHTML = `🔖 +${totalPagesToday}p`;
+            dayCell.appendChild(progressBadge);
+
+        }
 
         if (finishedBooksByDate[dateString]) {
             const coversContainer = document.createElement('div');
